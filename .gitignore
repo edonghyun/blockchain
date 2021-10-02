@@ -377,3 +377,4 @@ logs
 .vscode
 
 artifacts
+.deps
