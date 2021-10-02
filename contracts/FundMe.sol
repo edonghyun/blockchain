@@ -8,6 +8,7 @@ contract FundMe {
     AggregatorV3Interface internal priceFeed;
 
     mapping(address => uint256) public addressToAmountFunded;
+    address[] public funders;
     address public owner;
 
     constructor() {
@@ -19,6 +20,7 @@ contract FundMe {
         uint256 minimumUSD = 50 * 10 ** 18;
         require(msg.value > 0, "You need to spend more USD");
         addressToAmountFunded[msg.sender] += msg.value;
+        funders.push(msg.sender);
     }
 
     function getVersion() public view returns (uint256) {
@@ -37,19 +39,23 @@ contract FundMe {
     }
     
     function getLatestPrice() public view returns (int) {
-        (
-            uint80 roundID, 
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
+        (, int price,,,) = priceFeed.latestRoundData();
         return price;
     }
     
-    function withdraw() payable public {
+    modifier onlyOwner {
         require(msg.sender == owner);
+        _;
+    }
+    
+    function withdraw() payable onlyOwner public {
         payable(msg.sender).transfer(address(this).balance);
+        for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
+            address funder = funders[funderIndex];
+            addressToAmountFunded[funder] = 0;
+        }
+
+        funders = new address[](0);
     }
     
 }
