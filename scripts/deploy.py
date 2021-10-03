@@ -7,6 +7,8 @@ from brownie import (
     SimpleStorage,
 )
 
+from .helper import get_account
+
 
 def deploy_simple_storage():
     account = get_account()
@@ -17,12 +19,6 @@ def deploy_simple_storage():
     transaction = simple_storage.store(15, {'from': account})
     transaction.wait(1)
     updated_stored_value = simple_storage.retrieve()
-
-
-def get_account():
-    if(network.show_active() == 'development'):
-        return accounts[0]
-    return accounts.add(config['wallets']['from_key'])
 
 
 def main():
